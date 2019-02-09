@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import './App.css';
 import Chart from './Chart.js';
 import Input from './Input.js';
+import * as d3 from 'd3';
 class App extends Component {
   constructor(props) {
     super(props);
@@ -14,7 +15,6 @@ class App extends Component {
     };
   }
   addValue(value) {
-    console.log(this.state);
     var date = this.state.dataList[this.state.dataList.length - 1].date;
     var month = parseInt(date.substr(5));
     if (month == 12) {
@@ -25,19 +25,15 @@ class App extends Component {
     var objectTemp = { date: date, value: value };
 
     var final = tempList.concat(objectTemp);
-    console.log(final);
     this.setState({ dataList: final, value: this.state.value });
   }
 
   handleValueChange(value) {
     this.setState({ value: value, dataList: this.state.dataList });
-    console.log(this.state);
   }
-  setDataList(value) {
-    this.setState(state => {
-      console.log(state);
-      return { dataList: state.dataList, value: this.state.value };
-    });
+  setDataList(dataList) {
+    console.log(dataList);
+    this.setState({ dataList: dataList, value: this.state.value });
     // this.setDataList({dataList:value})
   }
   render() {
