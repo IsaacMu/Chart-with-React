@@ -6,15 +6,38 @@ class Chart extends Component {
   componentDidMount() {
     this.drawChart();
   }
+
   async drawChart() {
+    var svg = d3.select('svg');
     // initial
-    const margin = 60;
-    const width = 1000 - 2 * margin;
-    const height = 600 - 2 * margin;
+    const margin = {
+      top: 20,
+      right: 20,
+      bottom: 30,
+      left: 50
+    };
+    const width = +svg.attr('width') - margin.left - margin.right;
+    const height = +svg.attr('height') - margin.top - margin.bottom;
+
+    // padding
+    const chart = svg
+      .append('g')
+      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+    //xAxis
+    var xScale = d3
+      .scaleBand()
+      .rangeRound([0, width])
+      .padding(0.1);
+
+    //yAxis
+    // const maxY = d3.max(dataList,function(d){return +d.value})
+    // console.log(maxY)
+    var yScale = d3.scaleLinear().rangeRound([height, 0]);
 
     //get Initial value
     var dataList = [];
-    var data = await d3.csv(
+    var dataType = await d3.csv(
       'date.csv',
       function(d) {
         return {
@@ -23,38 +46,67 @@ class Chart extends Component {
         };
       },
       function(data) {
-        console.log(data);
         dataList.push(data);
+
+        const boundwidth = width / dataList.length;
       }
     );
-    console.log(data);
-    console.log(dataList);
-
-    const svg = d3.select('svg');
-    // padding
-    const chart = svg
-      .append('g')
-      .attr('transform', `translate(${margin}, ${margin})`);
-    //yAxis
-    const yScale = d3
-      .scaleLinear()
-      .range([height, 0])
-      .domain([0, 100]);
-    chart.append('g').call(d3.axisLeft(yScale));
-    //xAxis
-    const xScale = d3
-      .scaleTime()
-      .range([0, width])
-      .domain(dataList.map(d => d.date));
-
+    xScale.domain(
+      dataList.map(function(d) {
+        return d.date;
+      })
+    );
     chart
       .append('g')
       .attr('transform', `translate(0, ${height})`)
       .call(d3.axisBottom(xScale));
+
+    const maxY = d3.max(dataList, function(d) {
+      return +d.value;
+    });
+    yScale.domain([0, maxY]);
+    chart.append('g').call(d3.axisLeft(yScale));
+
+    var barGroups = chart
+      .selectAll()
+      .data(dataList)
+      .enter();
+    barGroups
+      .append('rect')
+      .attr('class', 'bar')
+      .attr('x', function(g) {
+        return xScale(g.date);
+      })
+      .attr('y', function(g) {
+        return yScale(Number(g.value));
+      })
+      .attr('height', function(g) {
+        return height - yScale(Number(g.value));
+      })
+      .attr('width', xScale.bandwidth());
+
+    svg
+      .selectAll()
+      .data(dataList)
+      .enter()
+      .append('text')
+      .attr('class', 'bar')
+      .attr('x', function(d) {
+        return xScale(d.date) + xScale.bandwidth() / 2 - 2;
+      })
+      .attr('y', function(d) {
+        return yScale(d.value) - 1;
+      })
+      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+      .text(function(d) {
+        return d.value;
+      });
   }
+
   render() {
     // You can use them as regular CSS styles
-    return <svg className="chart" />;
+    // initial
+    return <svg className="chart" width="960" height="500" />;
   }
 }
 export default Chart;
