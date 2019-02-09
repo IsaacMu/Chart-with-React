@@ -3,8 +3,13 @@ import './Chart.css'; // Tell Webpack that Chart.js uses these styles
 import * as d3 from 'd3';
 
 class Chart extends Component {
+  constructor(props) {
+    super(props);
+    this.drawChart = this.drawChart.bind(this);
+  }
   componentDidMount() {
-    this.drawChart();
+    var data = this.drawChart();
+    this.props.setData(data);
   }
 
   async drawChart() {
@@ -35,8 +40,11 @@ class Chart extends Component {
     // console.log(maxY)
     var yScale = d3.scaleLinear().rangeRound([height, 0]);
 
+    var data = this.props.dataList;
+    console.log('1');
+    var dataList = data;
+    // var dataList = this.state.dataList;
     //get Initial value
-    var dataList = [];
     var dataType = await d3.csv(
       'date.csv',
       function(d) {
@@ -47,8 +55,6 @@ class Chart extends Component {
       },
       function(data) {
         dataList.push(data);
-
-        const boundwidth = width / dataList.length;
       }
     );
     xScale.domain(
@@ -101,6 +107,7 @@ class Chart extends Component {
       .text(function(d) {
         return d.value;
       });
+    return dataList;
   }
 
   render() {
